@@ -35,6 +35,7 @@ brews:
     repository:
       owner: songtov
       name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
     directory: Formula
     homepage: https://github.com/songtov/wtt
     description: "Git worktree manager — create, navigate, and remove worktrees easily"
