@@ -31,7 +31,7 @@ func RepoRoot() (string, error) {
 func MainRepoRoot() (string, error) {
 	worktrees, err := ListWorktrees()
 	if err != nil {
-		return "", fmt.Errorf("not inside a git repository")
+		return "", fmt.Errorf("not inside a git repository: %w", err)
 	}
 	if len(worktrees) == 0 {
 		return "", fmt.Errorf("could not determine main repository root")
