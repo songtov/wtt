@@ -28,12 +28,13 @@ func init() {
 }
 
 func runRemove(_ *cobra.Command, args []string) error {
-	repoRoot, err := git.RepoRoot()
+	repoRoot, err := repoRootWithFallback()
 	if err != nil {
 		return err
 	}
+	autoRegisterRepo(repoRoot)
 
-	worktrees, err := git.ListWorktrees()
+	worktrees, err := git.ListWorktreesIn(repoRoot)
 	if err != nil {
 		return fmt.Errorf("listing worktrees: %w", err)
 	}

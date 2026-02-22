@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -76,6 +77,71 @@ func selectWorktreeWithFzf(worktrees []git.Worktree) (*git.Worktree, error) {
 		return nil, fmt.Errorf("unexpected fzf index: %q", parts[0])
 	}
 	return &worktrees[idx], nil
+}
+
+// SelectRepo presents a list of repo paths for selection via fzf (or numbered
+// fallback). Returns the selected absolute repo path, or "" if cancelled.
+func SelectRepo(repos []string) (string, error) {
+	if len(repos) == 0 {
+		return "", fmt.Errorf("no repos registered yet; run wtt commands inside a git repo first")
+	}
+	if hasFzf() {
+		return selectRepoWithFzf(repos)
+	}
+	return selectRepoNumbered(repos)
+}
+
+func selectRepoWithFzf(repos []string) (string, error) {
+	var input strings.Builder
+	for i, p := range repos {
+		fmt.Fprintf(&input, "%d\t%s\t%s\n", i, filepath.Base(p), p)
+	}
+
+	// Show "name   path" columns; hide the index column
+	cmd := exec.Command("fzf", "--with-nth=2,3", "--delimiter=\t", "--ansi")
+	cmd.Stdin = strings.NewReader(input.String())
+	cmd.Stderr = os.Stderr
+
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	if err := cmd.Run(); err != nil {
+		if cmd.ProcessState.ExitCode() == 130 {
+			return "", nil // user cancelled
+		}
+		return "", fmt.Errorf("fzf: %w", err)
+	}
+
+	selected := strings.TrimSpace(out.String())
+	parts := strings.SplitN(selected, "\t", 3)
+	if len(parts) < 3 {
+		return "", fmt.Errorf("unexpected fzf output: %q", selected)
+	}
+	idx, err := strconv.Atoi(parts[0])
+	if err != nil || idx < 0 || idx >= len(repos) {
+		return "", fmt.Errorf("unexpected fzf index: %q", parts[0])
+	}
+	return repos[idx], nil
+}
+
+func selectRepoNumbered(repos []string) (string, error) {
+	fmt.Fprintln(os.Stderr, "Select a repo:")
+	for i, p := range repos {
+		fmt.Fprintf(os.Stderr, "  [%d] %s  %s\n", i+1, filepath.Base(p), p)
+	}
+	fmt.Fprint(os.Stderr, "Enter number: ")
+
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	text := strings.TrimSpace(scanner.Text())
+	if text == "" {
+		return "", nil
+	}
+	n, err := strconv.Atoi(text)
+	if err != nil || n < 1 || n > len(repos) {
+		return "", fmt.Errorf("invalid selection %q", text)
+	}
+	return repos[n-1], nil
 }
 
 func selectWorktreeNumbered(worktrees []git.Worktree) (*git.Worktree, error) {

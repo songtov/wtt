@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/songtov/wtt/internal/git"
+	"github.com/songtov/wtt/internal/globalconfig"
 	"github.com/songtov/wtt/internal/shell"
 	"github.com/spf13/cobra"
 )
@@ -31,6 +32,27 @@ func init() {
 	rootCmd.AddCommand(removeCmd)
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(repoCmd)
+}
+
+// repoRootWithFallback returns the git repo root for the current directory.
+// When not inside a git repo it falls back to the context saved by "wtt repo".
+func repoRootWithFallback() (string, error) {
+	root, err := git.RepoRoot()
+	if err == nil {
+		return root, nil
+	}
+	current, cfgErr := globalconfig.GetCurrentRepo()
+	if cfgErr != nil || current == "" {
+		return "", fmt.Errorf("not inside a git repository (run 'wtt repo' to set a repo context)")
+	}
+	return current, nil
+}
+
+// autoRegisterRepo silently adds repoRoot to the known-repos list so it shows
+// up in "wtt repo". Errors are intentionally ignored — registration is best-effort.
+func autoRegisterRepo(repoRoot string) {
+	_ = globalconfig.RegisterRepo(repoRoot)
 }
 
 func runRoot(cmd *cobra.Command, args []string) error {
@@ -49,7 +71,13 @@ func runRoot(cmd *cobra.Command, args []string) error {
 
 	branch := args[0]
 
-	worktrees, err := git.ListWorktrees()
+	repoRoot, err := repoRootWithFallback()
+	if err != nil {
+		return err
+	}
+	autoRegisterRepo(repoRoot)
+
+	worktrees, err := git.ListWorktreesIn(repoRoot)
 	if err != nil {
 		return fmt.Errorf("listing worktrees: %w", err)
 	}

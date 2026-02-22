@@ -87,3 +87,13 @@ func ValidateBranchName(name string) error {
 func BranchToPath(branch string) string {
 	return strings.ReplaceAll(branch, "/", "-")
 }
+
+// ListWorktreesIn returns all worktrees for the repo at the given root path.
+// It uses `git -C <repoRoot>` so it works from any working directory.
+func ListWorktreesIn(repoRoot string) ([]Worktree, error) {
+	out, err := exec.Command("git", "-C", repoRoot, "worktree", "list", "--porcelain").Output()
+	if err != nil {
+		return nil, fmt.Errorf("git worktree list: %w", err)
+	}
+	return parseWorktrees(string(out)), nil
+}
