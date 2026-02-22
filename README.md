@@ -1,5 +1,7 @@
 # wtt — Git Worktree Manager
 
+**wtt** stands for **worktree-tov**.
+
 `wtt` wraps `git worktree` to create, navigate, and remove worktrees with minimal friction.
 
 ## Installation
