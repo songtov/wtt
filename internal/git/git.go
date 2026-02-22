@@ -25,22 +25,18 @@ func RepoRoot() (string, error) {
 }
 
 // MainRepoRoot returns the absolute path of the main (primary) repository
-// root, even when called from inside a linked worktree. It reads the first
-// entry from "git worktree list --porcelain", which is always the main
-// worktree regardless of the current working directory.
+// root, even when called from inside a linked worktree. It uses
+// ListWorktrees(), whose first entry is always the main worktree regardless
+// of the current working directory.
 func MainRepoRoot() (string, error) {
-	out, err := exec.Command("git", "worktree", "list", "--porcelain").Output()
+	worktrees, err := ListWorktrees()
 	if err != nil {
 		return "", fmt.Errorf("not inside a git repository")
 	}
-	scanner := bufio.NewScanner(strings.NewReader(string(out)))
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, "worktree ") {
-			return strings.TrimPrefix(line, "worktree "), nil
-		}
+	if len(worktrees) == 0 {
+		return "", fmt.Errorf("could not determine main repository root")
 	}
-	return "", fmt.Errorf("could not determine main repository root")
+	return worktrees[0].Path, nil
 }
 
 // RepoName returns the base name of the repository root directory.
