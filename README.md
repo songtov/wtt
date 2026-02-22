@@ -9,6 +9,12 @@ brew tap songtov/tap
 brew install wtt
 ```
 
+To update to the latest version:
+
+```sh
+brew update && brew upgrade wtt
+```
+
 Then add the shell integration so `wtt` can `cd` for you.
 
 **zsh** — add to `~/.zshrc`:
@@ -71,6 +77,20 @@ A child process can't change the parent shell's directory, so `wtt` ships as `wt
 
 Worktrees land at `../<repo>-worktrees/<branch>/` by default. Slashes in branch names become dashes (`feature/login` → `feature-login`).
 
+## Contributing
+
+Contributions are welcome! Here's how to get started:
+
+```sh
+git clone https://github.com/songtov/wtt.git
+cd wtt
+go build -o wtt-bin .
+```
+
+- Bug reports and feature requests → [open an issue](https://github.com/songtov/wtt/issues)
+- Pull requests → fork the repo, make your changes on a branch, and open a PR against `main`
+- Please keep changes focused — one feature or fix per PR
+
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE) for details.
