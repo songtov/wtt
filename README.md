@@ -5,7 +5,8 @@
 ## Installation
 
 ```sh
-brew install songtov/wtt/wtt
+brew tap songtov/tap
+brew install wtt
 ```
 
 Then add the shell integration so `wtt` can `cd` for you.

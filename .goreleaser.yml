@@ -34,7 +34,7 @@ brews:
   - name: wtt
     repository:
       owner: songtov
-      name: homebrew-wtt
+      name: homebrew-tap
     directory: Formula
     homepage: https://github.com/songtov/wtt
     description: "Git worktree manager — create, navigate, and remove worktrees easily"
