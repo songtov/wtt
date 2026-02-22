@@ -1,0 +1,54 @@
+version: 2
+
+project_name: wtt
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: wtt
+    binary: wtt-bin
+    main: .
+    ldflags:
+      - -s -w -X github.com/songtov/wtt/cmd.Version={{.Version}}
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: wtt
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    formats:
+      - tar.gz
+    files:
+      - README.md
+
+checksum:
+  name_template: "checksums.txt"
+
+brews:
+  - name: wtt
+    repository:
+      owner: songtov
+      name: homebrew-wtt
+    directory: Formula
+    homepage: https://github.com/songtov/wtt
+    description: "Git worktree manager — create, navigate, and remove worktrees easily"
+    license: MIT
+    install: |
+      bin.install "wtt-bin"
+    caveats: |
+      To enable shell navigation (cd on worktree select), add this to your shell rc:
+
+        # zsh (~/.zshrc):
+        eval "$(wtt-bin --init zsh)"
+
+        # bash (~/.bashrc or ~/.bash_profile):
+        eval "$(wtt-bin --init bash)"
+
+        # fish (~/.config/fish/config.fish):
+        wtt-bin --init fish | source
