@@ -23,10 +23,12 @@ If no branch name is given, a random name is generated.`,
 }
 
 func runCreate(cmd *cobra.Command, args []string) error {
-	repoRoot, err := git.MainRepoRoot()
+	repoRoot, err := repoRootWithFallback()
 	if err != nil {
 		return err
 	}
+	autoRegisterRepo(repoRoot)
+
 	repoName := filepath.Base(repoRoot)
 
 	cfg, err := config.Load(repoRoot, repoName)

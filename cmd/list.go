@@ -17,7 +17,13 @@ var listCmd = &cobra.Command{
 }
 
 func runList(_ *cobra.Command, _ []string) error {
-	worktrees, err := git.ListWorktrees()
+	repoRoot, err := repoRootWithFallback()
+	if err != nil {
+		return err
+	}
+	autoRegisterRepo(repoRoot)
+
+	worktrees, err := git.ListWorktreesIn(repoRoot)
 	if err != nil {
 		return fmt.Errorf("listing worktrees: %w", err)
 	}
