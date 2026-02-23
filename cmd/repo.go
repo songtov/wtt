@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/songtov/wtt/internal/fzf"
+	"github.com/songtov/wtt/internal/git"
 	"github.com/songtov/wtt/internal/globalconfig"
 	"github.com/spf13/cobra"
 )
@@ -25,6 +26,30 @@ func runRepo(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return fmt.Errorf("loading repos: %w", err)
 	}
+	if len(repos) == 0 {
+		fmt.Fprintln(os.Stderr, "No repos registered yet. Run any wtt command from inside a git repo first.")
+		return nil
+	}
+
+	// Normalize each entry to its main repo root and deduplicate.
+	// This cleans up stale worktree paths registered before the fix.
+	seen := map[string]bool{}
+	var canonical []string
+	for _, r := range repos {
+		main, err := git.MainRepoRootOf(r)
+		if err != nil {
+			continue // path gone or not a git repo — drop it
+		}
+		if !seen[main] {
+			seen[main] = true
+			canonical = append(canonical, main)
+		}
+	}
+	if len(canonical) != len(repos) {
+		_ = globalconfig.SetKnownRepos(canonical)
+	}
+	repos = canonical
+
 	if len(repos) == 0 {
 		fmt.Fprintln(os.Stderr, "No repos registered yet. Run any wtt command from inside a git repo first.")
 		return nil

@@ -39,7 +39,7 @@ func init() {
 // repoRootWithFallback returns the git repo root for the current directory.
 // When not inside a git repo it falls back to the context saved by "wtt repo".
 func repoRootWithFallback() (string, error) {
-	root, err := git.RepoRoot()
+	root, err := git.MainRepoRoot()
 	if err == nil {
 		return root, nil
 	}

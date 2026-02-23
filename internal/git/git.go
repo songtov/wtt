@@ -103,6 +103,21 @@ func BranchToPath(branch string) string {
 	return strings.ReplaceAll(branch, "/", "-")
 }
 
+// MainRepoRootOf resolves any path inside a git repo (including linked
+// worktrees) to the primary worktree root. It uses `git -C <dir>` so it
+// works regardless of the process's current working directory.
+func MainRepoRootOf(dir string) (string, error) {
+	out, err := exec.Command("git", "-C", dir, "worktree", "list", "--porcelain").Output()
+	if err != nil {
+		return "", fmt.Errorf("not a git repository: %s", dir)
+	}
+	worktrees := parseWorktrees(string(out))
+	if len(worktrees) == 0 {
+		return "", fmt.Errorf("could not determine main repo root for %s", dir)
+	}
+	return worktrees[0].Path, nil
+}
+
 // ListWorktreesIn returns all worktrees for the repo at the given root path.
 // It uses `git -C <repoRoot>` so it works from any working directory.
 func ListWorktreesIn(repoRoot string) ([]Worktree, error) {
