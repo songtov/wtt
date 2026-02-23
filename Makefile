@@ -6,7 +6,7 @@ build:
 test-local: build
 	@echo ""
 	@echo "Local binary built. To test in this shell:"
-	@echo "  export PATH=$(PWD):$$PATH"
+	@echo "  export PATH=\$$(pwd):\$$PATH"
 	@echo "  eval \"\$$(wtt-bin --init zsh)\""
 	@echo "  wtt version  # should show $(VERSION)"
 	@echo ""
