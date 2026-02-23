@@ -1,3 +1,4 @@
 wtt-bin
 dist/
 .claude/
+.env
