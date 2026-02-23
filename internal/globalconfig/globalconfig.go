@@ -69,6 +69,19 @@ func GetKnownRepos() ([]string, error) {
 	return repos, nil
 }
 
+// SetKnownRepos overwrites the repos list with the given slice.
+func SetKnownRepos(repos []string) error {
+	dir, err := configDir()
+	if err != nil {
+		return err
+	}
+	var sb strings.Builder
+	for _, r := range repos {
+		sb.WriteString(r + "\n")
+	}
+	return os.WriteFile(filepath.Join(dir, "repos"), []byte(sb.String()), 0644)
+}
+
 // RegisterRepo adds a repo path to the known repos list. It is idempotent.
 func RegisterRepo(repoPath string) error {
 	repos, err := GetKnownRepos()
