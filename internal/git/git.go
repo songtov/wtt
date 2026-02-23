@@ -24,6 +24,21 @@ func RepoRoot() (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
+// MainRepoRoot returns the absolute path of the main (primary) repository
+// root, even when called from inside a linked worktree. It uses
+// ListWorktrees(), whose first entry is always the main worktree regardless
+// of the current working directory.
+func MainRepoRoot() (string, error) {
+	worktrees, err := ListWorktrees()
+	if err != nil {
+		return "", fmt.Errorf("not inside a git repository: %w", err)
+	}
+	if len(worktrees) == 0 {
+		return "", fmt.Errorf("could not determine main repository root")
+	}
+	return worktrees[0].Path, nil
+}
+
 // RepoName returns the base name of the repository root directory.
 func RepoName() (string, error) {
 	root, err := RepoRoot()
