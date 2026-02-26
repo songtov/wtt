@@ -62,6 +62,7 @@ _wtt_setup() {
       fi
       # Persist so p10k reload sees the change, then reload once.
       typeset -g POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS
+      typeset -g POWERLEVEL9K_WTT_SHOW_ON_COMMAND='wtt'
       p10k reload 2>/dev/null
     fi
     return
