@@ -10,11 +10,16 @@ import (
 
 // Create creates a new git worktree for the given branch and returns its path.
 // worktreeBaseDir is the absolute path of the base directory for worktrees.
-func Create(repoRoot, worktreeBaseDir, branch string) (string, error) {
+// base, if non-empty, is passed as the start-point to git worktree add.
+func Create(repoRoot, worktreeBaseDir, branch, base string) (string, error) {
 	safeName := git.BranchToPath(branch)
 	worktreePath := filepath.Join(worktreeBaseDir, safeName)
 
-	cmd := exec.Command("git", "worktree", "add", "-b", branch, worktreePath)
+	args := []string{"worktree", "add", "-b", branch, worktreePath}
+	if base != "" {
+		args = append(args, base)
+	}
+	cmd := exec.Command("git", args...)
 	cmd.Dir = repoRoot
 	out, err := cmd.CombinedOutput()
 	if err != nil {

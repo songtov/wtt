@@ -50,6 +50,9 @@ func selectWorktreeWithFzf(worktrees []git.Worktree) (*git.Worktree, error) {
 			branch = "(detached)"
 		}
 		branch = strings.TrimPrefix(branch, "refs/heads/")
+		if i == 0 {
+			branch += " *original*"
+		}
 		fmt.Fprintf(&input, "%d\t%s\n", i, branch)
 	}
 
@@ -124,6 +127,77 @@ func selectRepoWithFzf(repos []string) (string, error) {
 	return repos[idx], nil
 }
 
+// SelectRepoWithNone is like SelectRepo but prepends a "None" option that
+// represents clearing the current repo context.
+// Returns (path, noneSelected, err). noneSelected is true when the user
+// explicitly chose "(none)"; path is "" and noneSelected is false when cancelled.
+func SelectRepoWithNone(repos []string) (string, bool, error) {
+	if hasFzf() {
+		return selectRepoWithNoneFzf(repos)
+	}
+	return selectRepoWithNoneNumbered(repos)
+}
+
+func selectRepoWithNoneFzf(repos []string) (string, bool, error) {
+	var input strings.Builder
+	fmt.Fprintf(&input, "-1\t(none)\t\n")
+	for i, p := range repos {
+		fmt.Fprintf(&input, "%d\t%s\t%s\n", i, filepath.Base(p), p)
+	}
+
+	cmd := exec.Command("fzf", "--with-nth=2,3", "--delimiter=\t", "--ansi")
+	cmd.Stdin = strings.NewReader(input.String())
+	cmd.Stderr = os.Stderr
+
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	if err := cmd.Run(); err != nil {
+		if cmd.ProcessState.ExitCode() == 130 {
+			return "", false, nil
+		}
+		return "", false, fmt.Errorf("fzf: %w", err)
+	}
+
+	selected := strings.TrimSpace(out.String())
+	parts := strings.SplitN(selected, "\t", 3)
+	if len(parts) < 2 {
+		return "", false, fmt.Errorf("unexpected fzf output: %q", selected)
+	}
+	if parts[0] == "-1" {
+		return "", true, nil
+	}
+	idx, err := strconv.Atoi(parts[0])
+	if err != nil || idx < 0 || idx >= len(repos) {
+		return "", false, fmt.Errorf("unexpected fzf index: %q", parts[0])
+	}
+	return repos[idx], false, nil
+}
+
+func selectRepoWithNoneNumbered(repos []string) (string, bool, error) {
+	fmt.Fprintln(os.Stderr, "Select a repo (0 to clear):")
+	fmt.Fprintf(os.Stderr, "  [0] (none) – clear repo context\n")
+	for i, p := range repos {
+		fmt.Fprintf(os.Stderr, "  [%d] %s  %s\n", i+1, filepath.Base(p), p)
+	}
+	fmt.Fprint(os.Stderr, "Enter number: ")
+
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	text := strings.TrimSpace(scanner.Text())
+	if text == "" {
+		return "", false, nil
+	}
+	n, err := strconv.Atoi(text)
+	if err != nil || n < 0 || n > len(repos) {
+		return "", false, fmt.Errorf("invalid selection %q", text)
+	}
+	if n == 0 {
+		return "", true, nil
+	}
+	return repos[n-1], false, nil
+}
+
 func selectRepoNumbered(repos []string) (string, error) {
 	fmt.Fprintln(os.Stderr, "Select a repo:")
 	for i, p := range repos {
@@ -152,6 +226,9 @@ func selectWorktreeNumbered(worktrees []git.Worktree) (*git.Worktree, error) {
 			branch = "(detached)"
 		}
 		branch = strings.TrimPrefix(branch, "refs/heads/")
+		if i == 0 {
+			branch += " *original*"
+		}
 		fmt.Fprintf(os.Stderr, "  [%d] %s  %s\n", i+1, branch, wt.Path)
 	}
 	fmt.Fprint(os.Stderr, "Enter number: ")

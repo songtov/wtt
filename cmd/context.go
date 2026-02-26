@@ -20,8 +20,8 @@ var contextCmd = &cobra.Command{
 }
 
 func runContext(_ *cobra.Command, _ []string) error {
-	// 1. Prefer the actual git root of the current directory
-	root, err := git.RepoRoot()
+	// 1. Prefer the main repo root of the current directory
+	root, err := git.MainRepoRoot()
 	if err == nil {
 		fmt.Println(filepath.Base(root))
 		return nil
