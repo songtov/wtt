@@ -1,4 +1,4 @@
-VERSION ?= v0.3.0-dev
+VERSION ?= v0.3.1
 
 build:
 	go build -ldflags "-X github.com/songtov/wtt/cmd.Version=$(VERSION)" -o wtt-bin .
