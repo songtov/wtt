@@ -82,6 +82,34 @@ func SetKnownRepos(repos []string) error {
 	return os.WriteFile(filepath.Join(dir, "repos"), []byte(sb.String()), 0644)
 }
 
+// RemoveRepo removes a repo path from the known repos list.
+func RemoveRepo(repoPath string) error {
+	repos, err := GetKnownRepos()
+	if err != nil {
+		return err
+	}
+	var filtered []string
+	for _, r := range repos {
+		if r != repoPath {
+			filtered = append(filtered, r)
+		}
+	}
+	return SetKnownRepos(filtered)
+}
+
+// ClearCurrentRepo removes the saved current-repo context file.
+func ClearCurrentRepo() error {
+	dir, err := configDir()
+	if err != nil {
+		return err
+	}
+	err = os.Remove(filepath.Join(dir, "current_repo"))
+	if os.IsNotExist(err) {
+		return nil
+	}
+	return err
+}
+
 // RegisterRepo adds a repo path to the known repos list. It is idempotent.
 func RegisterRepo(repoPath string) error {
 	repos, err := GetKnownRepos()
