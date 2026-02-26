@@ -13,6 +13,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var createBase string
+
+func init() {
+	createCmd.Flags().StringVarP(&createBase, "base", "b", "", "Base commit/branch/ref to create the worktree from (default: HEAD)")
+}
+
 var createCmd = &cobra.Command{
 	Use:   "create [branch]",
 	Short: "Create a new worktree",
@@ -54,7 +60,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 
 	fmt.Fprintf(os.Stderr, "Creating worktree for branch %q...\n", branch)
 
-	worktreePath, err := worktree.Create(repoRoot, worktreeBaseDir, branch)
+	worktreePath, err := worktree.Create(repoRoot, worktreeBaseDir, branch, createBase)
 	if err != nil {
 		return err
 	}
