@@ -12,10 +12,11 @@ const configFile = ".wtt.toml"
 
 // Config holds the wtt configuration.
 type Config struct {
-	WorktreeDir string   `toml:"worktree_dir"`
-	CopyFiles   []string `toml:"copy_files"`
-	CopyDirs    []string `toml:"copy_dirs"`
-	PostCreate  []string `toml:"post_create"`
+	WorktreeDir  string   `toml:"worktree_dir"`
+	CopyFiles    []string `toml:"copy_files"`
+	CopyDirs     []string `toml:"copy_dirs"`
+	SymlinkFiles []string `toml:"symlink_files"`
+	PostCreate   []string `toml:"post_create"`
 }
 
 // Load reads .wtt.toml from repoRoot and merges with defaults.
@@ -42,6 +43,9 @@ func Load(repoRoot, repoName string) (*Config, error) {
 	if len(fileCfg.CopyDirs) > 0 {
 		cfg.CopyDirs = fileCfg.CopyDirs
 	}
+	if len(fileCfg.SymlinkFiles) > 0 {
+		cfg.SymlinkFiles = fileCfg.SymlinkFiles
+	}
 	if len(fileCfg.PostCreate) > 0 {
 		cfg.PostCreate = fileCfg.PostCreate
 	}
@@ -51,9 +55,10 @@ func Load(repoRoot, repoName string) (*Config, error) {
 
 func defaults(repoName string) *Config {
 	return &Config{
-		WorktreeDir: fmt.Sprintf("../%s-worktrees", repoName),
-		CopyFiles:   []string{".gitignore"},
-		CopyDirs:    []string{},
-		PostCreate:  []string{},
+		WorktreeDir:  fmt.Sprintf("../%s-worktrees", repoName),
+		CopyFiles:    []string{".gitignore"},
+		CopyDirs:     []string{},
+		SymlinkFiles: []string{},
+		PostCreate:   []string{},
 	}
 }

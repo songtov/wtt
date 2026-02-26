@@ -1,3 +1,17 @@
+# wtt configuration
+# See: https://github.com/songtov/wtt
 
+# Directory for worktrees (relative to repo root)
+# worktree_dir = "../<reponame>-worktrees"
+
+# Files to copy into new worktrees
 copy_files = [".env", ".gitignore"]
 
+# Directories to copy into new worktrees
+# copy_dirs = []
+
+# Files to symlink (shared with main repo) into new worktrees
+symlink_files = [".claude/settings.local.json"]
+
+# Commands to run after creating a worktree
+post_create = ["echo hello"]

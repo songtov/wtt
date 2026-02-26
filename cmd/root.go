@@ -34,6 +34,7 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(repoCmd)
 	rootCmd.AddCommand(contextCmd)
+	rootCmd.AddCommand(initCmd)
 }
 
 // repoRootWithFallback returns the git repo root for the current directory.
