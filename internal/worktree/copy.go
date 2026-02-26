@@ -20,6 +20,36 @@ func CopyFiles(srcDir, dstDir string, files []string) error {
 	return nil
 }
 
+// SymlinkFiles creates symlinks in dstDir pointing to files in srcDir.
+// Files that don't exist in srcDir are silently skipped.
+func SymlinkFiles(srcDir, dstDir string, files []string) error {
+	for _, f := range files {
+		src := filepath.Join(srcDir, f)
+		dst := filepath.Join(dstDir, f)
+
+		if _, err := os.Stat(src); os.IsNotExist(err) {
+			continue // silently skip
+		}
+
+		absSrc, err := filepath.Abs(src)
+		if err != nil {
+			return fmt.Errorf("abs path %s: %w", src, err)
+		}
+
+		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+			return fmt.Errorf("mkdir %s: %w", filepath.Dir(dst), err)
+		}
+
+		// Remove existing file/symlink before creating new symlink
+		_ = os.Remove(dst)
+
+		if err := os.Symlink(absSrc, dst); err != nil {
+			return fmt.Errorf("symlink %s → %s: %w", dst, absSrc, err)
+		}
+	}
+	return nil
+}
+
 // CopyDirs copies listed directories from srcDir to dstDir recursively.
 func CopyDirs(srcDir, dstDir string, dirs []string) error {
 	for _, d := range dirs {

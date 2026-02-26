@@ -72,6 +72,9 @@ func runCreate(cmd *cobra.Command, args []string) error {
 	if err := worktree.CopyDirs(repoRoot, worktreePath, cfg.CopyDirs); err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: copying dirs: %v\n", err)
 	}
+	if err := worktree.SymlinkFiles(repoRoot, worktreePath, cfg.SymlinkFiles); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: symlinking files: %v\n", err)
+	}
 
 	// Run post_create commands
 	for _, command := range cfg.PostCreate {
