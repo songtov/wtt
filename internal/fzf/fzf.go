@@ -50,9 +50,6 @@ func selectWorktreeWithFzf(worktrees []git.Worktree) (*git.Worktree, error) {
 			branch = "(detached)"
 		}
 		branch = strings.TrimPrefix(branch, "refs/heads/")
-		if i == 0 {
-			branch += " *original*"
-		}
 		fmt.Fprintf(&input, "%d\t%s\n", i, branch)
 	}
 
@@ -226,9 +223,6 @@ func selectWorktreeNumbered(worktrees []git.Worktree) (*git.Worktree, error) {
 			branch = "(detached)"
 		}
 		branch = strings.TrimPrefix(branch, "refs/heads/")
-		if i == 0 {
-			branch += " *original*"
-		}
 		fmt.Fprintf(os.Stderr, "  [%d] %s  %s\n", i+1, branch, wt.Path)
 	}
 	fmt.Fprint(os.Stderr, "Enter number: ")

@@ -60,7 +60,7 @@ func runRemove(_ *cobra.Command, args []string) error {
 		branch = strings.TrimPrefix(selected.Branch, "refs/heads/")
 	} else {
 		branch = args[0]
-		for _, wt := range worktrees {
+		for _, wt := range removable {
 			if wt.Branch == branch || wt.Branch == "refs/heads/"+branch {
 				targetPath = wt.Path
 				break
