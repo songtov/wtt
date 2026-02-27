@@ -16,8 +16,9 @@ import (
 // Select presents a list of worktrees for selection.
 // If fzf is available it uses an interactive picker; otherwise a numbered list.
 // Returns the selected worktree path, or "" if the user cancelled.
+// The first entry is marked as *original* (main worktree).
 func Select(worktrees []git.Worktree) (string, error) {
-	wt, err := SelectWorktree(worktrees)
+	wt, err := selectWorktree(worktrees, true)
 	if err != nil || wt == nil {
 		return "", err
 	}
@@ -26,15 +27,21 @@ func Select(worktrees []git.Worktree) (string, error) {
 
 // SelectWorktree presents a list of worktrees for selection and returns the
 // selected Worktree, or nil if the user cancelled.
-func SelectWorktree(worktrees []git.Worktree) (*git.Worktree, error) {
+// markFirst controls whether the first entry is labelled *original*.
+// Pass false when the list has already had the main worktree removed (e.g. remove command).
+func SelectWorktree(worktrees []git.Worktree, markFirst bool) (*git.Worktree, error) {
+	return selectWorktree(worktrees, markFirst)
+}
+
+func selectWorktree(worktrees []git.Worktree, markFirst bool) (*git.Worktree, error) {
 	if len(worktrees) == 0 {
 		return nil, fmt.Errorf("no worktrees found")
 	}
 
 	if hasFzf() {
-		return selectWorktreeWithFzf(worktrees)
+		return selectWorktreeWithFzf(worktrees, markFirst)
 	}
-	return selectWorktreeNumbered(worktrees)
+	return selectWorktreeNumbered(worktrees, markFirst)
 }
 
 func hasFzf() bool {
@@ -42,7 +49,7 @@ func hasFzf() bool {
 	return err == nil
 }
 
-func selectWorktreeWithFzf(worktrees []git.Worktree) (*git.Worktree, error) {
+func selectWorktreeWithFzf(worktrees []git.Worktree, markFirst bool) (*git.Worktree, error) {
 	var input strings.Builder
 	for i, wt := range worktrees {
 		branch := wt.Branch
@@ -50,6 +57,9 @@ func selectWorktreeWithFzf(worktrees []git.Worktree) (*git.Worktree, error) {
 			branch = "(detached)"
 		}
 		branch = strings.TrimPrefix(branch, "refs/heads/")
+		if markFirst && i == 0 {
+			branch += " *original*"
+		}
 		fmt.Fprintf(&input, "%d\t%s\n", i, branch)
 	}
 
@@ -215,7 +225,7 @@ func selectRepoNumbered(repos []string) (string, error) {
 	return repos[n-1], nil
 }
 
-func selectWorktreeNumbered(worktrees []git.Worktree) (*git.Worktree, error) {
+func selectWorktreeNumbered(worktrees []git.Worktree, markFirst bool) (*git.Worktree, error) {
 	fmt.Fprintln(os.Stderr, "Select a worktree:")
 	for i, wt := range worktrees {
 		branch := wt.Branch
@@ -223,6 +233,9 @@ func selectWorktreeNumbered(worktrees []git.Worktree) (*git.Worktree, error) {
 			branch = "(detached)"
 		}
 		branch = strings.TrimPrefix(branch, "refs/heads/")
+		if markFirst && i == 0 {
+			branch += " *original*"
+		}
 		fmt.Fprintf(os.Stderr, "  [%d] %s  %s\n", i+1, branch, wt.Path)
 	}
 	fmt.Fprint(os.Stderr, "Enter number: ")

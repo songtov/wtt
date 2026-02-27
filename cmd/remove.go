@@ -49,7 +49,7 @@ func runRemove(_ *cobra.Command, args []string) error {
 		if len(removable) == 0 {
 			return fmt.Errorf("no worktrees to remove")
 		}
-		selected, err := fzf.SelectWorktree(removable)
+		selected, err := fzf.SelectWorktree(removable, false)
 		if err != nil {
 			return err
 		}
