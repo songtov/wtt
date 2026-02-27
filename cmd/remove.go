@@ -60,7 +60,12 @@ func runRemove(_ *cobra.Command, args []string) error {
 		branch = strings.TrimPrefix(selected.Branch, "refs/heads/")
 	} else {
 		branch = args[0]
-		for _, wt := range worktrees {
+		// Check if user is trying to remove the main worktree
+		main := worktrees[0]
+		if main.Branch == branch || main.Branch == "refs/heads/"+branch {
+			return fmt.Errorf("cannot remove the main worktree")
+		}
+		for _, wt := range removable {
 			if wt.Branch == branch || wt.Branch == "refs/heads/"+branch {
 				targetPath = wt.Path
 				break

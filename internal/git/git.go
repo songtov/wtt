@@ -13,6 +13,7 @@ type Worktree struct {
 	Path   string
 	Head   string
 	Branch string
+	IsMain bool
 }
 
 // RepoRoot returns the absolute path of the repository root.
@@ -81,6 +82,9 @@ func parseWorktrees(raw string) []Worktree {
 	}
 	if current.Path != "" {
 		worktrees = append(worktrees, current)
+	}
+	if len(worktrees) > 0 {
+		worktrees[0].IsMain = true
 	}
 	return worktrees
 }
