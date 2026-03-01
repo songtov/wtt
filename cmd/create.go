@@ -14,9 +14,11 @@ import (
 )
 
 var createBase string
+var createClaude bool
 
 func init() {
 	createCmd.Flags().StringVarP(&createBase, "base", "b", "", "Base commit/branch/ref to create the worktree from (default: HEAD)")
+	createCmd.Flags().BoolVarP(&createClaude, "claude", "c", false, "start Claude Code in the new worktree")
 }
 
 var createCmd = &cobra.Command{
@@ -85,6 +87,24 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		c.Stderr = os.Stderr
 		if err := c.Run(); err != nil {
 			fmt.Fprintf(os.Stderr, "Warning: post_create command failed: %v\n", err)
+		}
+	}
+
+	// Launch Claude Code in the worktree if requested
+	if createClaude {
+		tty, err := os.OpenFile("/dev/tty", os.O_RDWR, 0)
+		if err != nil {
+			return fmt.Errorf("cannot open terminal: %w", err)
+		}
+		defer tty.Close()
+
+		claude := exec.Command("claude")
+		claude.Dir = worktreePath
+		claude.Stdin = tty
+		claude.Stdout = tty
+		claude.Stderr = tty
+		if err := claude.Run(); err != nil {
+			fmt.Fprintf(os.Stderr, "claude exited: %v\n", err)
 		}
 	}
 
