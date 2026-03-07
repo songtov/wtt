@@ -22,7 +22,7 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		os.Exit(1)
+		os.Exit(exitCodeForError(err))
 	}
 }
 
@@ -35,6 +35,7 @@ func init() {
 	rootCmd.AddCommand(repoCmd)
 	rootCmd.AddCommand(contextCmd)
 	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(pruneCmd)
 }
 
 // repoRootWithFallback returns the git repo root for the current directory.

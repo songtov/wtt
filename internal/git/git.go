@@ -122,6 +122,26 @@ func MainRepoRootOf(dir string) (string, error) {
 	return worktrees[0].Path, nil
 }
 
+// MergedBranches returns a set of branch names (both short and refs/heads/ form)
+// that have been merged into HEAD in the repository at repoRoot.
+func MergedBranches(repoRoot string) (map[string]bool, error) {
+	out, err := exec.Command("git", "-C", repoRoot, "branch", "--merged", "HEAD").Output()
+	if err != nil {
+		return nil, fmt.Errorf("git branch --merged: %w", err)
+	}
+	merged := make(map[string]bool)
+	scanner := bufio.NewScanner(strings.NewReader(string(out)))
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		line = strings.TrimPrefix(line, "* ")
+		if line != "" {
+			merged[line] = true
+			merged["refs/heads/"+line] = true
+		}
+	}
+	return merged, nil
+}
+
 // ListWorktreesIn returns all worktrees for the repo at the given root path.
 // It uses `git -C <repoRoot>` so it works from any working directory.
 func ListWorktreesIn(repoRoot string) ([]Worktree, error) {
