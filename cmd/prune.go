@@ -71,7 +71,7 @@ func runPrune(_ *cobra.Command, _ []string) error {
 		return nil
 	}
 
-	var removed []pruneEntry
+	removed := []pruneEntry{}
 	scanner := bufio.NewScanner(os.Stdin)
 	for _, wt := range toRemove {
 		branch := strings.TrimPrefix(wt.Branch, "refs/heads/")
